@@ -70,3 +70,61 @@ def create_csv_submission(ids, y_pred, name):
         writer.writeheader()
         for r1, r2 in zip(ids, y_pred):
             writer.writerow({"Id": int(r1), "Prediction": int(r2)})
+
+
+# ---------------------------------------------------------------------------
+# Logistic regression helpers
+# ---------------------------------------------------------------------------
+
+
+def sigmoid(t):
+    """Apply the sigmoid function 1 / (1 + exp(-t)) element-wise.
+
+    Uses the identity sigmoid(t) = 0.5 * (1 + tanh(t / 2)), which gives the
+    same values as 1 / (1 + exp(-t)) but never overflows for large |t| and
+    is about twice as fast in numpy.
+
+    Args:
+        t: numpy array of any shape.
+
+    Returns:
+        numpy array of the same shape with values in (0, 1).
+    """
+    return 0.5 * (1.0 + np.tanh(0.5 * t))
+
+
+def compute_logistic_loss(y, tx, w):
+    """Compute the negative log-likelihood loss of logistic regression.
+
+    The loss is averaged over the N samples:
+        L(w) = (1/N) * sum_n [ log(1 + exp(x_n^T w)) - y_n * x_n^T w ]
+
+    np.logaddexp(0, z) computes log(1 + exp(z)) in a numerically stable way,
+    avoiding overflow for large |z|.
+
+    Args:
+        y: numpy array of shape (N,), labels in {0, 1}.
+        tx: numpy array of shape (N, D), the feature matrix.
+        w: numpy array of shape (D,), the weight vector.
+
+    Returns:
+        loss: scalar, the average negative log-likelihood.
+    """
+    z = tx @ w
+    return np.mean(np.logaddexp(0, z) - y * z)
+
+
+def compute_logistic_gradient(y, tx, w):
+    """Compute the gradient of the logistic regression loss w.r.t. w.
+
+        grad(w) = (1/N) * X^T (sigmoid(X w) - y)
+
+    Args:
+        y: numpy array of shape (N,), labels in {0, 1}.
+        tx: numpy array of shape (N, D), the feature matrix.
+        w: numpy array of shape (D,), the weight vector.
+
+    Returns:
+        gradient: numpy array of shape (D,).
+    """
+    return tx.T @ (sigmoid(tx @ w) - y) / len(y)
