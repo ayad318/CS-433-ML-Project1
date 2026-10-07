@@ -128,3 +128,40 @@ def compute_logistic_gradient(y, tx, w):
         gradient: numpy array of shape (D,).
     """
     return tx.T @ (sigmoid(tx @ w) - y) / len(y)
+
+ 
+def compute_mse_loss(y, tx, w):
+    """Compute the mean squared error loss with the 1/2 factor of the course.
+ 
+        L(w) = 1/(2N) * sum_n (y_n - x_n^T w)^2
+ 
+    Args:
+        y: numpy array of shape (N,), the targets.
+        tx: numpy array of shape (N, D), the feature matrix.
+        w: numpy array of shape (D,), the weight vector.
+ 
+    Returns:
+        loss: scalar, the MSE loss.
+    """
+    e = y - tx @ w
+    return 0.5 * np.mean(e**2)
+ 
+ 
+def compute_mse_gradient(y, tx, w):
+    """Compute the gradient of the MSE loss w.r.t. w.
+ 
+        grad(w) = -(1/N) * X^T (y - X w)
+ 
+    Works for the full data (gradient descent) and for a single sample
+    (stochastic gradient descent, where N = 1).
+ 
+    Args:
+        y: numpy array of shape (N,), the targets.
+        tx: numpy array of shape (N, D), the feature matrix.
+        w: numpy array of shape (D,), the weight vector.
+ 
+    Returns:
+        gradient: numpy array of shape (D,).
+    """
+    e = y - tx @ w
+    return -tx.T @ e / len(y)
