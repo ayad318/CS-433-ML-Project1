@@ -1,22 +1,27 @@
 import numpy as np
 
-from helpers import sigmoid, compute_logistic_loss, compute_logistic_gradient
-
+from helpers import (
+    sigmoid,
+    compute_logistic_loss,
+    compute_logistic_gradient,
+    compute_mse_loss,
+    compute_mse_gradient,
+)
 
 
 def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     """Linear regression using gradient descent.
- 
+
     Minimizes the MSE loss 1/(2N) * ||y - X w||^2 by taking max_iters
     full-gradient steps of size gamma starting from initial_w.
- 
+
     Args:
         y: numpy array of shape (N,), the targets.
         tx: numpy array of shape (N, D), the feature matrix.
         initial_w: numpy array of shape (D,), the initial weight vector.
         max_iters: int, number of gradient descent steps to run.
         gamma: float, the step size.
- 
+
     Returns:
         w: numpy array of shape (D,), the last weight vector.
         loss: scalar, the MSE loss evaluated at w.
@@ -27,21 +32,21 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
         w = w - gamma * gradient
     loss = compute_mse_loss(y, tx, w)
     return w, loss
- 
- 
+
+
 def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
     """Linear regression using stochastic gradient descent (batch size 1).
- 
+
     At each of the max_iters steps, one sample n is drawn uniformly at random
     and w is updated with the gradient computed on that sample only.
- 
+
     Args:
         y: numpy array of shape (N,), the targets.
         tx: numpy array of shape (N, D), the feature matrix.
         initial_w: numpy array of shape (D,), the initial weight vector.
         max_iters: int, number of SGD steps to run.
         gamma: float, the step size.
- 
+
     Returns:
         w: numpy array of shape (D,), the last weight vector.
         loss: scalar, the MSE loss on the FULL dataset evaluated at w.
@@ -56,7 +61,6 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
         w = w - gamma * gradient
     loss = compute_mse_loss(y, tx, w)
     return w, loss
- 
 
 
 def least_squares(y, tx):
@@ -73,15 +77,15 @@ def least_squares(y, tx):
 
     >>> least_squares(np.array([0.1,0.2]), np.array([[2.3, 3.2], [1., 0.1]]))
     (array([ 0.21212121, -0.12121212]), 8.666684749742561e-33)
-    
+
     """
-    w = np.linalg.solve(tx.T@tx, tx.T @ y)
-    
+    w = np.linalg.solve(tx.T @ tx, tx.T @ y)
+
     N = len(y)
 
-    mse = 1/(2*N) * (((y - (np.matmul(tx,w)))**2).sum())
+    mse = 1 / (2 * N) * (((y - (np.matmul(tx, w))) ** 2).sum())
 
-    return (w,mse)
+    return (w, mse)
 
 
 def ridge_regression(y, tx, lambda_):
@@ -94,13 +98,9 @@ def ridge_regression(y, tx, lambda_):
 
     Returns:
         w: optimal weights, numpy array of shape(D,), D is the number of features.
-
-    >>> ridge_regression(np.array([0.1,0.2]), np.array([[2.3, 3.2], [1., 0.1]]), 0)
-    array([ 0.21212121, -0.12121212])
-    >>> ridge_regression(np.array([0.1,0.2]), np.array([[2.3, 3.2], [1., 0.1]]), 1)
-    array([0.03947092, 0.00319628])
+        loss: scalar, the MSE loss at w, without the penalty term.
     """
-    
+
     N = tx.shape[0]
 
     # Identity matrix
@@ -110,8 +110,10 @@ def ridge_regression(y, tx, lambda_):
     b = tx.T @ y
 
     w = np.linalg.solve(A, b)
+    loss = compute_mse_loss(y, tx, w)
 
-    return w
+    return w, loss
+
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """Logistic regression using gradient descent (labels y in {0, 1}).
