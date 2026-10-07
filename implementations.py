@@ -70,14 +70,58 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
 
 
 def least_squares(y, tx):
-    """Least squares regression using the normal equations."""
-    raise NotImplementedError
+    """Calculate the least squares solution.
+       returns mse, and optimal weights.
+
+    Args:
+        y: numpy array of shape (N,), N is the number of samples.
+        tx: numpy array of shape (N,D), D is the number of features.
+
+    Returns:
+        w: optimal weights, numpy array of shape(D,), D is the number of features.
+        mse: scalar.
+
+    >>> least_squares(np.array([0.1,0.2]), np.array([[2.3, 3.2], [1., 0.1]]))
+    (array([ 0.21212121, -0.12121212]), 8.666684749742561e-33)
+    
+    """
+    w = np.linalg.solve(tx.T@tx, tx.T @ y)
+    
+    N = len(y)
+
+    mse = 1/(2*N) * (((y - (np.matmul(tx,w)))**2).sum())
+
+    return (w,mse)
 
 
 def ridge_regression(y, tx, lambda_):
-    """Ridge regression using the normal equations."""
-    raise NotImplementedError
+    """implement ridge regression.
 
+    Args:
+        y: numpy array of shape (N,), N is the number of samples.
+        tx: numpy array of shape (N,D), D is the number of features.
+        lambda_: scalar.
+
+    Returns:
+        w: optimal weights, numpy array of shape(D,), D is the number of features.
+
+    >>> ridge_regression(np.array([0.1,0.2]), np.array([[2.3, 3.2], [1., 0.1]]), 0)
+    array([ 0.21212121, -0.12121212])
+    >>> ridge_regression(np.array([0.1,0.2]), np.array([[2.3, 3.2], [1., 0.1]]), 1)
+    array([0.03947092, 0.00319628])
+    """
+
+    N = tx.shape[0]
+
+    # Identity matrix
+    I = np.eye(tx.shape[1])
+
+    A = tx.T @ tx + 2 * N * lambda_ * I
+    b = tx.T @ y
+
+    w = np.linalg.solve(A, b)
+
+    return w
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """Logistic regression using gradient descent (labels y in {0, 1}).
