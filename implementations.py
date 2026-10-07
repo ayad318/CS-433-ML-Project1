@@ -106,7 +106,7 @@ def ridge_regression(y, tx, lambda_):
     # Identity matrix
     I = np.eye(tx.shape[1])
 
-    A = tx.T @ tx + 2 * N * lambda_ * I
+    A = tx.T @ tx + N * lambda_ * I
     b = tx.T @ y
 
     w = np.linalg.solve(A, b)
