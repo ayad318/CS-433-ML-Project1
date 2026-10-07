@@ -59,16 +59,6 @@ def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
  
 
 
-def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
-    """Linear regression using gradient descent."""
-    raise NotImplementedError
-
-
-def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
-    """Linear regression using stochastic gradient descent."""
-    raise NotImplementedError
-
-
 def least_squares(y, tx):
     """Calculate the least squares solution.
        returns mse, and optimal weights.
