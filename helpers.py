@@ -1,7 +1,7 @@
 """Some helper functions for project 1."""
 
 import csv
-import numpy as np
+import numpy as np  
 import os
 
 
@@ -127,7 +127,11 @@ def compute_logistic_gradient(y, tx, w):
     Returns:
         gradient: numpy array of shape (D,).
     """
-    return tx.T @ (sigmoid(tx @ w) - y) / len(y)
+    e = sigmoid(tx @ w) - y
+    # Dividing by a plain Python int >= 65536 makes NumPy 1.x upcast float32
+    # results to float64 (and then tx @ w copies tx to float64 at every
+    # iteration). Dividing by a 0-d array of e's dtype keeps the precision.
+    return tx.T @ e / np.asarray(len(y), dtype=e.dtype)
 
 
 def compute_mse_loss(y, tx, w):
@@ -164,4 +168,5 @@ def compute_mse_gradient(y, tx, w):
         gradient: numpy array of shape (D,).
     """
     e = y - tx @ w
-    return -tx.T @ e / len(y)
+    # See compute_logistic_gradient: keep e's dtype when dividing by N.
+    return -tx.T @ e / np.asarray(len(y), dtype=e.dtype)
