@@ -20,7 +20,7 @@ import numpy as np
 
 from model_selection import classification_metrics, cross_validate
 from models import linear_least_squares, linear_ridge, logistic_gd, logistic_newton
-from preprocessing import Preprocessor, clean_raw, load_data
+from preprocessing import Preprocessor, clean_raw, load_data, CROSS_COLS
 from run import LAMBDA, POS_WEIGHT, PREPROCESSOR
 
 K_FOLD, SEED = 5, 1
@@ -41,41 +41,41 @@ def main():
     best = logistic_newton(LAMBDA, POS_WEIGHT)
 
     # (name, x, columns, preprocessor factory, fit function, default threshold)
-    '''configs = [
+    configs = [
         # --- Baselines: required methods on the full preprocessing ---------
-        ("least squares", x_clean, columns, prep(), linear_least_squares(), 0.5),
-        ("ridge (lambda=1e-5)", x_clean, columns, prep(), linear_ridge(1e-5), 0.5),
-        ("reg. logistic GD (300 it, gamma=0.5)", x_clean, columns, prep(),
+        ("least squares", x_clean, columns, prep( poly_degree=1,cross_cols=None), linear_least_squares(), 0.5),
+        ("ridge (lambda=1e-5)", x_clean, columns, prep( poly_degree=1,cross_cols=None), linear_ridge(1e-5), 0.5),
+        ("reg. logistic GD (300 it, gamma=0.5)", x_clean, columns, prep( poly_degree=1,cross_cols=None),
          logistic_gd(LAMBDA, 0.5, 300), 0.0),
         # --- Final model ---------------------------------------------------
-        ("FINAL: weighted logistic Newton", x_clean, columns, prep(), best, 0.0),
+        ("FINAL: weighted logistic Newton", x_clean, columns, prep( poly_degree=1,cross_cols=None), best, 0.0),
         # --- Ablation: remove one component at a time ----------------------
-        ("- no class weighting (pos_weight=1)", x_clean, columns, prep(),
+        ("- no class weighting (pos_weight=1)", x_clean, columns, prep( poly_degree=1,cross_cols=None),
          logistic_newton(LAMBDA, 1.0), 0.0),
         ("- no log1p of skewed features", x_clean, columns,
-         prep(log_skewed=False), best, 0.0),
+         prep(log_skewed=False, poly_degree=1,cross_cols=None), best, 0.0),
         ("- no missingness indicators", x_clean, columns,
-         prep(missing_indicators=False), best, 0.0),
+         prep(missing_indicators=False, poly_degree=1,cross_cols=None), best, 0.0),
         ("- no one-hot (all continuous)", x_clean, columns,
-         prep(max_categories=0), best, 0.0),
+         prep(max_categories=0, poly_degree=1,cross_cols=None), best, 0.0),
         ("- no clean_raw (all 321 raw columns)", x_train, raw_columns,
          prep(), best, 0.0),
         ("- keep columns <= 50% missing", x_clean, columns,
-         prep(max_nan_frac=0.5), best, 0.0),
+         prep(max_nan_frac=0.5, poly_degree=1,cross_cols=None), best, 0.0),
         ("- keep columns <= 80% missing", x_clean, columns,
-         prep(max_nan_frac=0.8), best, 0.0),
-    ]'''
-    configs = [
-        ("2 deg polynomial: weighted logistic Newton", x_clean, columns, prep(poly_degree=2), best, 0.0),
-        ("3 deg polynomial: weighted logistic Newton", x_clean, columns, prep(poly_degree=3), best, 0.0)
+         prep(max_nan_frac=0.8, poly_degree=1,cross_cols=None), best, 0.0),
     ]
     # --- Hyperparameters ----------------------------------------------------
-    for lam in [1e-6, 1e-3, 1e-2]:
-        configs.append((f"lambda={lam:g}", x_clean, columns, prep(),
+    for lam in [1e-6, 1e-5, 1e-4,1e-3, 1e-2]:
+        configs.append((f"lambda={lam:g}", x_clean, columns, prep(poly_degree=1, cross_cols=None),
                         logistic_newton(lam, POS_WEIGHT), 0.0))
-    for pw in [6.0, 10.0]:
-        configs.append((f"pos_weight={pw:g}", x_clean, columns, prep(),
-                        logistic_newton(LAMBDA, pw), 0.0))
+    
+    for deg in [2,3,4]:
+        configs.append((f"Polynomial deg={deg}, cross_cols=None", x_clean, columns, prep(cross_cols=None,poly_degree=deg), best, 0))
+    configs.append((f"Polynomial deg=4, cross_cols hand selected", x_clean, columns, prep(cross_cols=CROSS_COLS,poly_degree=4), best, 0))
+    
+    
+    
 
     os.makedirs("results", exist_ok=True)
     rows = []

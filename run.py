@@ -32,9 +32,9 @@ SEED = 1
 K_FOLD = 5
 
 # Hyperparameters (chosen by cross-validation, see experiments.py).
-PREPROCESSOR = dict(max_nan_frac=0.99, max_categories=10,
+PREPROCESSOR = dict(max_nan_frac=1.00, max_categories=10,
                     log_skewed=True, missing_indicators=True)
-LAMBDA = 1e-4
+LAMBDA = 1e-5
 POS_WEIGHT = 3.0
 
 
