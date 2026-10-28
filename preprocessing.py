@@ -160,11 +160,14 @@ class Preprocessor:
     """
 
     def __init__(self, max_nan_frac=0.8, max_categories=10,
-                 log_skewed=True, missing_indicators=True):
+                 log_skewed=True, missing_indicators=True, 
+                 poly_degree=1, cross_cols=None):
         self.max_nan_frac = max_nan_frac
         self.max_categories = max_categories
         self.log_skewed = log_skewed
         self.missing_indicators = missing_indicators
+        self.poly_degree = poly_degree
+
 
     def fit(self, x, columns):
         nan = np.isnan(x)
@@ -192,8 +195,20 @@ class Preprocessor:
                 std = v.std()
                 if std == 0:
                     continue
-                self.continuous.append((j, use_log, np.median(v), v.mean(), std))
+                v_std = (v - v.mean()) / std
+                poly_stats = [] # (p,mean, std)
+                for i in range(2, self.poly_degree + 1):
+                    p = np.power(v_std, i)
+                    p_std = p.std()
+                    if p_std == 0:
+                        p_std = 1.0
+                    poly_stats.append((i, p.mean(), p_std))
+
+                self.continuous.append((j, use_log, np.median(v), v.mean(), std, poly_stats))
                 self.feature_names.append(f"log1p({c})" if use_log else c)
+                for p,p_mean, p_std in poly_stats:
+                    self.feature_names.append(f"Polynomial ({p})({c})")
+                     
 
         # Missingness indicators: one per distinct pattern among used columns.
         self.indicator_cols = []
@@ -217,13 +232,19 @@ class Preprocessor:
         for j, levels in self.categorical:
             out[:, k:k + len(levels)] = x[:, j:j + 1] == levels[None, :]
             k += len(levels)
-        for j, use_log, median, mean, std in self.continuous:
+        for j, use_log, median, mean, std, poly_stats in self.continuous:
             v = x[:, j]
             if use_log:
                 v = np.log1p(np.clip(v, 0, None))
             v = np.where(np.isnan(v), median, v)
-            out[:, k] = (v - mean) / std
+            v_std = (v - mean) / std
+            out[:, k] = v_std
             k += 1
+          
+            for p,p_mean,p_std in poly_stats:
+                out[:,k] = (np.power(v_std,p) - p_mean) / p_std
+                k += 1
+            
         for j in self.indicator_cols:
             out[:, k] = np.isnan(x[:, j])
             k += 1

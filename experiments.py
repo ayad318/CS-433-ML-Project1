@@ -41,7 +41,7 @@ def main():
     best = logistic_newton(LAMBDA, POS_WEIGHT)
 
     # (name, x, columns, preprocessor factory, fit function, default threshold)
-    configs = [
+    '''configs = [
         # --- Baselines: required methods on the full preprocessing ---------
         ("least squares", x_clean, columns, prep(), linear_least_squares(), 0.5),
         ("ridge (lambda=1e-5)", x_clean, columns, prep(), linear_ridge(1e-5), 0.5),
@@ -64,6 +64,10 @@ def main():
          prep(max_nan_frac=0.5), best, 0.0),
         ("- keep columns <= 80% missing", x_clean, columns,
          prep(max_nan_frac=0.8), best, 0.0),
+    ]'''
+    configs = [
+        ("2 deg polynomial: weighted logistic Newton", x_clean, columns, prep(poly_degree=2), best, 0.0),
+        ("3 deg polynomial: weighted logistic Newton", x_clean, columns, prep(poly_degree=3), best, 0.0)
     ]
     # --- Hyperparameters ----------------------------------------------------
     for lam in [1e-6, 1e-3, 1e-2]:
