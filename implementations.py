@@ -79,10 +79,13 @@ def least_squares(y, tx):
     (array([ 0.21212121, -0.12121212]), 8.666684749742561e-33)
 
     """
+    # Normal equations X^T X w = X^T y. np.linalg.solve is faster and more
+    # stable than computing the inverse of X^T X explicitly.
     w = np.linalg.solve(tx.T @ tx, tx.T @ y)
 
     N = len(y)
 
+    # MSE with the course's 1/(2N) factor (same as compute_mse_loss).
     mse = 1 / (2 * N) * (((y - (np.matmul(tx, w))) ** 2).sum())
 
     return (w, mse)
@@ -106,6 +109,8 @@ def ridge_regression(y, tx, lambda_):
     # Identity matrix
     I = np.eye(tx.shape[1])
 
+    # Setting the gradient of 1/(2N) ||y - Xw||^2 + lambda ||w||^2 to zero
+    # gives (X^T X + 2 N lambda I) w = X^T y.
     A = tx.T @ tx + 2 * N * lambda_ * I
     b = tx.T @ y
 
@@ -162,6 +167,7 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """
     w = initial_w
     for _ in range(max_iters):
+        # gradient of the penalty lambda * ||w||^2 is 2 * lambda * w
         gradient = compute_logistic_gradient(y, tx, w) + 2 * lambda_ * w
         w = w - gamma * gradient
     loss = compute_logistic_loss(y, tx, w)
