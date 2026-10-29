@@ -32,9 +32,14 @@ SEED = 1
 K_FOLD = 5
 
 # Hyperparameters (chosen by cross-validation, see experiments.py).
-PREPROCESSOR = dict(max_nan_frac=1.00, max_categories=10,
-                    log_skewed=True, missing_indicators=True, 
-                    poly_degree=4, cross_cols=CROSS_COLS)
+PREPROCESSOR = dict(
+    max_nan_frac=1.00,
+    max_categories=10,
+    log_skewed=True,
+    missing_indicators=True,
+    poly_degree=4,
+    cross_cols=CROSS_COLS,
+)
 LAMBDA = 1e-5
 POS_WEIGHT = 3.0
 
@@ -46,7 +51,7 @@ def main(report_cv=False):
     # Cleaning rules depend only on which codes appear in a column; computing
     # them on train+test together guarantees identical decisions on both.
     x_all, columns = clean_raw(np.vstack([x_train, x_test]), columns)
-    x_train, x_test = x_all[:len(y)], x_all[len(y):]
+    x_train, x_test = x_all[: len(y)], x_all[len(y) :]
     del x_all
 
     make_prep = lambda: Preprocessor(**PREPROCESSOR)
@@ -54,8 +59,9 @@ def main(report_cv=False):
 
     # The threshold is always chosen by CV; the metrics are printed on demand.
     print(f"{K_FOLD}-fold cross-validation...")
-    cv = cross_validate(x_train, y, columns, make_prep, fit, K_FOLD, SEED,
-                        verbose=report_cv)
+    cv = cross_validate(
+        x_train, y, columns, make_prep, fit, K_FOLD, SEED, verbose=report_cv
+    )
     threshold = cv["threshold"]
     if report_cv:
         for key in ["f1", "precision", "recall", "accuracy"]:

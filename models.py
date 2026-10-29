@@ -12,8 +12,9 @@ from helpers import sigmoid, compute_logistic_loss
 from implementations import least_squares, ridge_regression, reg_logistic_regression
 
 
-def weighted_reg_logistic_newton(y, tx, lambda_, pos_weight=1.0,
-                                 max_iters=25, tol=1e-4, verbose=False):
+def weighted_reg_logistic_newton(
+    y, tx, lambda_, pos_weight=1.0, max_iters=25, tol=1e-4, verbose=False
+):
     """Class-weighted, L2-regularized logistic regression via Newton's method.
 
     Minimizes
@@ -58,8 +59,8 @@ def _weighted_gram(tx, d, chunk=50_000):
     """X^T diag(d) X computed in row chunks to limit memory use."""
     out = np.zeros((tx.shape[1], tx.shape[1]))
     for i in range(0, tx.shape[0], chunk):
-        xc = tx[i:i + chunk]
-        out += (xc * d[i:i + chunk, None].astype(xc.dtype)).T @ xc
+        xc = tx[i : i + chunk]
+        out += (xc * d[i : i + chunk, None].astype(xc.dtype)).T @ xc
     return out
 
 
@@ -72,16 +73,20 @@ def logistic_newton(lambda_=1e-4, pos_weight=1.0):
     def fit(tx, y):
         w, _ = weighted_reg_logistic_newton(y, tx, lambda_, pos_weight)
         return lambda t: t @ w.astype(t.dtype)
+
     return fit
 
 
 def logistic_gd(lambda_=1e-4, gamma=0.5, max_iters=300):
     """Required reg_logistic_regression (plain gradient descent)."""
+
     def fit(tx, y):
         w0 = np.zeros(tx.shape[1], dtype=tx.dtype)
-        w, _ = reg_logistic_regression(y.astype(tx.dtype), tx, lambda_, w0,
-                                       max_iters, gamma)
+        w, _ = reg_logistic_regression(
+            y.astype(tx.dtype), tx, lambda_, w0, max_iters, gamma
+        )
         return lambda t: t @ w.astype(t.dtype)
+
     return fit
 
 
@@ -92,6 +97,7 @@ def linear_least_squares():
     from GENHLTH), which makes X^T X singular. In that case we fall back to
     the minimum-norm solution with the pseudo-inverse.
     """
+
     def fit(tx, y):
         tx, y = tx.astype(float), y.astype(float)
         try:
@@ -99,6 +105,7 @@ def linear_least_squares():
         except np.linalg.LinAlgError:
             w = np.linalg.pinv(tx.T @ tx) @ (tx.T @ y)
         return lambda t: t @ w
+
     return fit
 
 
@@ -106,4 +113,5 @@ def linear_ridge(lambda_=1e-5):
     def fit(tx, y):
         w, _ = ridge_regression(y.astype(float), tx.astype(float), lambda_)
         return lambda t: t @ w
+
     return fit

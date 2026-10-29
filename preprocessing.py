@@ -61,12 +61,42 @@ def load_data(data_path="dataset"):
 # screening questions. They describe how the interview was done, not the
 # respondent's health.
 ADMIN_COLUMNS = [
-    "FMONTH", "IDATE", "IMONTH", "IDAY", "IYEAR", "DISPCODE", "SEQNO", "_PSU",
-    "CTELENUM", "PVTRESD1", "COLGHOUS", "STATERES", "CELLFON3", "LADULT",
-    "CTELNUM1", "CELLFON2", "CADULT", "PVTRESD2", "CCLGHOUS", "CSTATE",
-    "LANDLINE", "HHADULT", "NUMHHOL2", "NUMPHON2", "CPDEMO1", "QSTVER",
-    "QSTLANG", "MSCODE", "_STSTR", "_STRWT", "_RAWRAKE", "_WT2RAKE",
-    "_CHISPNC", "_DUALUSE", "_DUALCOR", "_LLCPWT",
+    "FMONTH",
+    "IDATE",
+    "IMONTH",
+    "IDAY",
+    "IYEAR",
+    "DISPCODE",
+    "SEQNO",
+    "_PSU",
+    "CTELENUM",
+    "PVTRESD1",
+    "COLGHOUS",
+    "STATERES",
+    "CELLFON3",
+    "LADULT",
+    "CTELNUM1",
+    "CELLFON2",
+    "CADULT",
+    "PVTRESD2",
+    "CCLGHOUS",
+    "CSTATE",
+    "LANDLINE",
+    "HHADULT",
+    "NUMHHOL2",
+    "NUMPHON2",
+    "CPDEMO1",
+    "QSTVER",
+    "QSTLANG",
+    "MSCODE",
+    "_STSTR",
+    "_STRWT",
+    "_RAWRAKE",
+    "_WT2RAKE",
+    "_CHISPNC",
+    "_DUALUSE",
+    "_DUALCOR",
+    "_LLCPWT",
 ]
 
 # Raw answers that pack a unit into the value (e.g. 1xx = per day,
@@ -76,36 +106,50 @@ ADMIN_COLUMNS = [
 #   EXEROFT/EXERHMM -> PAFREQ*_, PADUR*_    STRENGTH -> STRFREQ_
 #   WEIGHT2/HEIGHT3 -> WTKG3, HTM4, _BMI5   EXRACT* (activity type) dropped
 ENCODED_RAW_COLUMNS = [
-    "ALCDAY5", "FRUITJU1", "FRUIT1", "FVBEANS", "FVGREEN", "FVORANG",
-    "VEGETAB1", "EXEROFT1", "EXEROFT2", "EXERHMM1", "EXERHMM2", "STRENGTH",
-    "EXRACT11", "EXRACT21", "WEIGHT2", "HEIGHT3",
+    "ALCDAY5",
+    "FRUITJU1",
+    "FRUIT1",
+    "FVBEANS",
+    "FVGREEN",
+    "FVORANG",
+    "VEGETAB1",
+    "EXEROFT1",
+    "EXEROFT2",
+    "EXERHMM1",
+    "EXERHMM2",
+    "STRENGTH",
+    "EXRACT11",
+    "EXRACT21",
+    "WEIGHT2",
+    "HEIGHT3",
 ]
 
 CROSS_COLS = [
     # Age amplifies most classical risk factors
-    ("_AGE80", "SEX=1"),        # men's risk rises earlier and faster
-    ("_AGE80", "_RFHYPE5=2"),    # hypertension matters more with age
-    ("_AGE80", "_RFCHOL=2"),     # high cholesterol
-    ("_AGE80", "DIABETE3=1"),    # diabetes
-    ("_AGE80", "_RFSMOK3=2"),    # current smoker
-
+    ("_AGE80", "SEX=1"),  # men's risk rises earlier and faster
+    ("_AGE80", "_RFHYPE5=2"),  # hypertension matters more with age
+    ("_AGE80", "_RFCHOL=2"),  # high cholesterol
+    ("_AGE80", "DIABETE3=1"),  # diabetes
+    ("_AGE80", "_RFSMOK3=2"),  # current smoker
     # Cardiometabolic clustering (risk factors compound)
     ("_RFHYPE5=2", "DIABETE3=1"),
     ("_RFHYPE5=2", "_RFCHOL=2"),
     ("_BMI5", "DIABETE3=1"),
     ("_BMI5", "_RFHYPE5=2"),
-
     # Lifestyle and sex-specific effects
     ("SEX=1", "_RFSMOK3=2"),
-    ("EXERANY2=2", "_BMI5"),     # no exercise at all, combined with BMI
-
+    ("EXERANY2=2", "_BMI5"),  # no exercise at all, combined with BMI
     # Self-reported poor health tends to be more alarming in older people
-    ("_AGE80", "GENHLTH=5"),     # "poor" general health
-    ("_AGE80", "PHYSHLTH"),      # days of poor physical health
+    ("_AGE80", "GENHLTH=5"),  # "poor" general health
+    ("_AGE80", "PHYSHLTH"),  # days of poor physical health
 ]
 # Missing-value codes the generic rule below does not catch.
-EXTRA_MISSING_CODES = {"DROCDY3_": [900], "_DRNKWEK": [99900],
-                       "_AGEG5YR": [14], "_AGE65YR": [3]}
+EXTRA_MISSING_CODES = {
+    "DROCDY3_": [900],
+    "_DRNKWEK": [99900],
+    "_AGEG5YR": [14],
+    "_AGE65YR": [3],
+}
 
 # Columns with many levels that are nominal, not ordered (one-hot encode).
 FORCE_CATEGORICAL = ["_STATE"]
@@ -157,6 +201,7 @@ def clean_raw(x, columns):
             v[v == code] = np.nan
     return x, columns
 
+
 class Preprocessor:
     """Turn cleaned raw columns into a numeric design matrix.
 
@@ -181,9 +226,15 @@ class Preprocessor:
          name may be given without its "log1p(...)" wrapper.
     """
 
-    def __init__(self, max_nan_frac=0.8, max_categories=10,
-                 log_skewed=True, missing_indicators=True,
-                 poly_degree=1, cross_cols=None):
+    def __init__(
+        self,
+        max_nan_frac=0.8,
+        max_categories=10,
+        log_skewed=True,
+        missing_indicators=True,
+        poly_degree=1,
+        cross_cols=None,
+    ):
         self.max_nan_frac = max_nan_frac
         self.max_categories = max_categories
         self.log_skewed = log_skewed
@@ -196,7 +247,7 @@ class Preprocessor:
         nan_frac = nan.mean(axis=0)
         self.columns_in = list(columns)
         self.categorical = []  # (col index, levels to one-hot, has_nan)
-        self.continuous = []   # (col index, use_log, median, mean, std, poly_stats)
+        self.continuous = []  # (col index, use_log, median, mean, std, poly_stats)
         self.feature_names = ["bias"]
 
         for j, c in enumerate(columns):
@@ -230,7 +281,8 @@ class Preprocessor:
                     poly_stats.append((i, p.mean(), p_std))
 
                 self.continuous.append(
-                    (j, use_log, np.median(v), v.mean(), std, poly_stats))
+                    (j, use_log, np.median(v), v.mean(), std, poly_stats)
+                )
                 self.feature_names.append(f"log1p({c})" if use_log else c)
                 for p, p_mean, p_std in poly_stats:
                     self.feature_names.append(f"Polynomial ({p})({c})")
@@ -242,17 +294,18 @@ class Preprocessor:
         self.indicator_cols = []
         if self.missing_indicators:
             cat_nan = sorted(j for j, _, h in self.categorical if h)
-            cont = sorted(j for j, *_ in self.continuous
-                          if 0 < nan_frac[j] < 1)
+            cont = sorted(j for j, *_ in self.continuous if 0 < nan_frac[j] < 1)
             cand = cat_nan + cont
             if cand:
                 packed = np.packbits(nan[:, cand], axis=0).T  # one row per col
                 _, first = np.unique(packed, axis=0, return_index=True)
                 cat_nan_set = set(cat_nan)
-                self.indicator_cols = [cand[i] for i in sorted(first)
-                                       if cand[i] not in cat_nan_set]
-            self.feature_names += [f"missing({columns[j]})"
-                                   for j in self.indicator_cols]
+                self.indicator_cols = [
+                    cand[i] for i in sorted(first) if cand[i] not in cat_nan_set
+                ]
+            self.feature_names += [
+                f"missing({columns[j]})" for j in self.indicator_cols
+            ]
 
         # Interactions, built from the finished base design matrix.
         self.n_base_ = len(self.feature_names)
@@ -264,8 +317,10 @@ class Preprocessor:
             for a, b in self.cross_cols:
                 ia, ib = self._resolve(a, index), self._resolve(b, index)
                 if ia is None or ib is None:
-                    print(f"cross_cols pair ({a}, {b}) skipped: "
-                                  "feature not found (dropped or misnamed)")
+                    print(
+                        f"cross_cols pair ({a}, {b}) skipped: "
+                        "feature not found (dropped or misnamed)"
+                    )
                     continue
                 prod = base[:, ia].astype(np.float64) * base[:, ib]
                 std = prod.std()
@@ -273,7 +328,8 @@ class Preprocessor:
                     continue
                 self.interactions.append((ia, ib, prod.mean(), std))
                 self.feature_names.append(
-                    f"{self.feature_names[ia]}*{self.feature_names[ib]}")
+                    f"{self.feature_names[ia]}*{self.feature_names[ib]}"
+                )
             del base
         return self
 
@@ -288,7 +344,7 @@ class Preprocessor:
         out[:, 0] = 1.0
         k = 1
         for j, levels, has_nan in self.categorical:
-            out[:, k:k + len(levels)] = x[:, j:j + 1] == levels[None, :]
+            out[:, k : k + len(levels)] = x[:, j : j + 1] == levels[None, :]
             k += len(levels)
             if has_nan:
                 out[:, k] = np.isnan(x[:, j])
@@ -319,6 +375,7 @@ class Preprocessor:
 
     def fit_transform(self, x, columns, dtype=np.float32):
         return self.fit(x, columns).transform(x, dtype)
+
 
 def _skew(v):
     """Sample skewness (third standardized moment)."""

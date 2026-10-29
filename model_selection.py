@@ -17,8 +17,12 @@ def classification_metrics(y_true, y_pred):
     precision = tp / (tp + fp) if tp + fp else 0.0
     recall = tp / (tp + fn) if tp + fn else 0.0
     f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
-    return {"f1": f1, "precision": precision, "recall": recall,
-            "accuracy": np.mean(y_pred == y_true)}
+    return {
+        "f1": f1,
+        "precision": precision,
+        "recall": recall,
+        "accuracy": np.mean(y_pred == y_true),
+    }
 
 
 def best_threshold(y_true, scores):
@@ -51,12 +55,14 @@ def stratified_kfold(y, k_fold, seed=1):
         for f, part in enumerate(np.array_split(idx, k_fold)):
             folds[f].append(part)
     folds = [np.concatenate(f) for f in folds]
-    return [(np.concatenate(folds[:f] + folds[f + 1:]), folds[f])
-            for f in range(k_fold)]
+    return [
+        (np.concatenate(folds[:f] + folds[f + 1 :]), folds[f]) for f in range(k_fold)
+    ]
 
 
-def cross_validate(x, y, columns, make_preprocessor, fit, k_fold=5, seed=1,
-                   verbose=True):
+def cross_validate(
+    x, y, columns, make_preprocessor, fit, k_fold=5, seed=1, verbose=True
+):
     """Stratified k-fold cross-validation of a full pipeline.
 
     For every fold, a fresh preprocessor is fitted on the training part only,
@@ -90,8 +96,10 @@ def cross_validate(x, y, columns, make_preprocessor, fit, k_fold=5, seed=1,
             print(f"  fold {f + 1}/{k_fold} done")
 
     threshold, _ = best_threshold(y, oof)
-    per_fold = [classification_metrics(y[va], (oof[va] >= threshold).astype(int))
-                for _, va in splits]
+    per_fold = [
+        classification_metrics(y[va], (oof[va] >= threshold).astype(int))
+        for _, va in splits
+    ]
     result = {"threshold": threshold, "oof_scores": oof}
     for key in per_fold[0]:
         vals = np.array([m[key] for m in per_fold])
