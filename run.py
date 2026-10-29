@@ -24,7 +24,7 @@ import numpy as np
 from helpers import create_csv_submission
 from model_selection import cross_validate
 from models import logistic_newton
-from preprocessing import Preprocessor, clean_raw, load_data
+from preprocessing import Preprocessor, clean_raw, load_data, CROSS_COLS
 
 DATA_PATH = "dataset"
 OUTPUT = "submission.csv"
@@ -33,7 +33,8 @@ K_FOLD = 5
 
 # Hyperparameters (chosen by cross-validation, see experiments.py).
 PREPROCESSOR = dict(max_nan_frac=1.00, max_categories=10,
-                    log_skewed=True, missing_indicators=True)
+                    log_skewed=True, missing_indicators=True, 
+                    poly_degree=4, cross_cols=CROSS_COLS)
 LAMBDA = 1e-5
 POS_WEIGHT = 3.0
 
